@@ -27,7 +27,7 @@ allprojects {
 ```java
 implementation 'com.github.enChenging:cameraAndPhotos:1.0'
 ```
-详细使用见工程里的simple
+详细使用见工程里的[simple](https://github.com/enChenging/cameraAndPhotos/tree/master/simple)
 
 使用核心代码：
 ```java

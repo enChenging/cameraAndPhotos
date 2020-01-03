@@ -57,6 +57,7 @@ public class MainActivity extends PermissionUtils implements PermissionUtils.Per
         Bimp.selectBitmap.clear();// 清空图册
         Bimp.max = 3;// 初始化最大选择数
         Bimp.themeColor = R.color.colorPrimary;//设置图册主题风格
+
         gridview.setSelector(new ColorDrawable(Color.TRANSPARENT));
         adapter = new GridAdapter(this);
         adapter.update();

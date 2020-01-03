@@ -59,11 +59,9 @@ public class PhotoActivity extends Activity {
             public void onClick(View v) {
                 if (listViews.size() == 1) {
                     Bimp.selectBitmap.clear();
-                    Bimp.max = 0;
                     finish();
                 } else {
                     Bimp.selectBitmap.remove(count);
-                    Bimp.max--;
                     pager.removeAllViews();
                     listViews.remove(count);
                     adapter.setListViews(listViews);

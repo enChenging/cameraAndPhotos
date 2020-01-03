@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Bimp {
-	public static int max = 0;
+	public static int max = 5;
 	public static int themeColor = 0;
 
 	public static List<ImageItem> selectBitmap = new LinkedList<ImageItem>(); //已经选择的图片

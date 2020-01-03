@@ -6,7 +6,7 @@ cameralibrary
 效果图如下：
 
 <div align="left" >
-	<img src="" width="200">
+	<img src="https://github.com/enChenging/cameraAndPhotos/blob/master/screenshot/video.gif" width="200">
 </div>
 
 ## 用法

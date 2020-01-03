@@ -1,6 +1,6 @@
 cameralibrary
 -
-    [![](https://jitpack.io/v/enChenging/cameraAndPhotos.svg)](https://jitpack.io/#enChenging/cameraAndPhotos)
+[![](https://jitpack.io/v/enChenging/cameraAndPhotos.svg)](https://jitpack.io/#enChenging/cameraAndPhotos)
 
 效果图如下：
 
@@ -24,7 +24,7 @@ allprojects {
  在build.gradle文件中的dependencies下添加引用：
 	
 ```java
-    implementation 'com.github.enChenging:cameraAndPhotos:1.0.0'
+implementation 'com.github.enChenging:cameraAndPhotos:1.0.0'
 ```
 
 

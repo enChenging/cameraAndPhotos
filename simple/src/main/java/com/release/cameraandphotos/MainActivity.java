@@ -56,6 +56,7 @@ public class MainActivity extends PermissionUtils implements PermissionUtils.Per
 
         Bimp.selectBitmap.clear();// 清空图册
         Bimp.max = 3;// 初始化最大选择数
+        Bimp.themeColor = R.color.colorPrimary;//设置图册主题风格
         gridview.setSelector(new ColorDrawable(Color.TRANSPARENT));
         adapter = new GridAdapter(this);
         adapter.update();
@@ -112,9 +113,7 @@ public class MainActivity extends PermissionUtils implements PermissionUtils.Per
                         if (position == 0) {
                             Utils.camera(MainActivity.this);
                         } else {
-                            Intent intent = new Intent(MainActivity.this, ImageGridActivity.class);
-                            intent.putExtra("maxSize", 3);
-                            startActivity(intent);
+                            startActivity(new Intent(MainActivity.this, ImageGridActivity.class));
                             overridePendingTransition(R.anim.activity_translate_in, R.anim.activity_translate_out);
                         }
                     }
@@ -146,6 +145,7 @@ public class MainActivity extends PermissionUtils implements PermissionUtils.Per
             case R.id.btn3: {
                 Bimp.selectBitmap.clear();
                 adapter.notifyDataSetChanged();
+                mIv_image.setImageBitmap(null);
             }
             break;
         }

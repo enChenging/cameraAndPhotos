@@ -7,7 +7,7 @@
     <RelativeLayout
         android:id="@+id/title"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="45dp"
         android:background="@color/title_color" >
 
         <TextView
@@ -20,7 +20,7 @@
             android:gravity="center"
             android:text="选择目录"
             android:textColor="@android:color/white"
-            android:textSize="20sp" />
+            android:textSize="16sp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -28,7 +28,7 @@
             android:layout_centerInParent="true"
             android:text="相册"
             android:textColor="#ffffff"
-            android:textSize="20sp" />
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/tv_cancel"
@@ -40,7 +40,7 @@
             android:gravity="center"
             android:text="取消"
             android:textColor="@android:color/white"
-            android:textSize="20sp" />
+            android:textSize="16sp" />
     </RelativeLayout>
 
     <LinearLayout
@@ -58,7 +58,7 @@
             android:padding="10dp"
             android:text="完成"
             android:textColor="@android:color/white"
-            android:textSize="20sp" />
+            android:textSize="16sp" />
     </LinearLayout>
 
     <GridView

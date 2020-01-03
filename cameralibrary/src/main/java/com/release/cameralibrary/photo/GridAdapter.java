@@ -72,7 +72,7 @@ public class GridAdapter extends BaseAdapter {
         if (position == Bimp.selectBitmap.size()) {
             Glide.with(mContext)
                     .asDrawable()
-                    .load(ContextCompat.getDrawable(mContext, R.mipmap.ic_add_photo))
+                    .load(ContextCompat.getDrawable(mContext, R.mipmap.icon_add_photo))
                     .into(holder.image);
             if (position == 3) {
                 holder.image.setVisibility(View.GONE);

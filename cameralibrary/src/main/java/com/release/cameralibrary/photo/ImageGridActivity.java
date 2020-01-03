@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -44,7 +45,6 @@ public class ImageGridActivity extends Activity implements OnClickListener {
     private ImageGridAdapter adapter;
     private AlbumHelper helper;
     private Button bt;
-    private int count;
 
     private TextView tv_cancel;
     private TextView tv_content;
@@ -52,6 +52,7 @@ public class ImageGridActivity extends Activity implements OnClickListener {
     private ListView popListView = null;
 
     private BitmapCache cache = new BitmapCache();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -95,8 +96,14 @@ public class ImageGridActivity extends Activity implements OnClickListener {
         });
 
         bt = (Button) findViewById(R.id.bt);
-        if (Bimp.selectBitmap.size() != 0) {
-            count = Bimp.selectBitmap.size();
+
+        if (Bimp.themeColor!=0){
+            bt.setBackground(getResources().getDrawable(Bimp.themeColor));
+            title.setBackground(getResources().getDrawable(Bimp.themeColor));
+        }
+
+        int count = Bimp.selectBitmap.size() + Bimp.tempSelectBitmap.size();
+        if (Bimp.selectBitmap.size() != count) {
             bt.setText("完成" + "(" + count + ")");
         }
         bt.setOnClickListener(this);
@@ -263,6 +270,7 @@ public class ImageGridActivity extends Activity implements OnClickListener {
 
                 @Override
                 public void onClick(View v) {
+                    Log.i("cyc", "onClick: === " + (Bimp.selectBitmap.size() + Bimp.tempSelectBitmap.size()));
                     if (Bimp.selectBitmap.size() + Bimp.tempSelectBitmap.size() < Bimp.max) {
                         item.isSelected = !item.isSelected;
                         if (item.isSelected) {
@@ -285,7 +293,6 @@ public class ImageGridActivity extends Activity implements OnClickListener {
                             holder.selected.setVisibility(View.INVISIBLE);
                             dataList.get(position).setSelected(false);
                             Bimp.selectBitmap.remove(dataList.get(position));
-                            //------------------------------
                             if (item.isSelected) {
                                 holder.selected.setVisibility(View.VISIBLE);
                                 dataList.get(position).setSelected(true);
@@ -300,9 +307,8 @@ public class ImageGridActivity extends Activity implements OnClickListener {
                                 holder.text.setBackgroundColor(0x00000000);
                                 bt.setText("完成" + "(" + (Bimp.selectBitmap.size() + Bimp.tempSelectBitmap.size()) + ")");
                             }
-
                         } else {
-                            Toast.makeText(ImageGridActivity.this, "最多选择"+Bimp.max+"张图片", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ImageGridActivity.this, "最多选择" + Bimp.max + "张图片", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }

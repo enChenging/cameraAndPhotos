@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="btnClick"
-        android:text="清空选择的多张图片" />
+        android:text="清空图片" />
 
     <ImageView
         android:id="@+id/iv_image"

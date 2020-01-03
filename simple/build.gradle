@@ -24,6 +24,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.1.0'
 
     implementation 'com.github.enChenging:Alert:1.0.0'
-    implementation 'com.github.enChenging:cameraAndPhotos:1.0.0'
-//    implementation project(':cameralibrary')
+//    implementation 'com.github.enChenging:cameraAndPhotos:1.0.0'
+    implementation project(':cameralibrary')
 }

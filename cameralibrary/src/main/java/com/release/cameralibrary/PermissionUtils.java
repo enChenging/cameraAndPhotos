@@ -3,13 +3,13 @@ package com.release.cameralibrary;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.provider.Settings;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -21,14 +21,14 @@ import java.util.List;
  * @create 2020-01-02
  * @Describe
  */
-public class PermissionUtils extends AppCompatActivity {
+public class PermissionUtils {
 
     public static final int PERMISSON_REQUESTCODE = 0;
 
     /**
      * 需要进行检测的权限数组
      */
-    protected String[] needPermissions = {
+    public static String[] needPermissions = {
             Manifest.permission.CAMERA,
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -95,7 +95,7 @@ public class PermissionUtils extends AppCompatActivity {
      * @param grantResults
      * @return
      */
-    public boolean verifyPermissions(int[] grantResults) {
+    public static boolean verifyPermissions(int[] grantResults) {
         for (int result : grantResults) {
             if (result != PackageManager.PERMISSION_GRANTED) {
                 return false;
@@ -108,8 +108,8 @@ public class PermissionUtils extends AppCompatActivity {
     /**
      * 显示提示信息
      */
-    public void showMissingPermissionDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    public static void showMissingPermissionDialog(final Context context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("提示");
         builder.setMessage("当前应用缺少必要权限。请点击设置，开启所有权限");
 
@@ -125,7 +125,7 @@ public class PermissionUtils extends AppCompatActivity {
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        startAppSettings();
+                        startAppSettings(context);
                     }
                 });
 
@@ -136,10 +136,12 @@ public class PermissionUtils extends AppCompatActivity {
 
     /**
      * 启动应用的设置
+     *
+     * @param context
      */
-    private void startAppSettings() {
+    private static void startAppSettings(Context context) {
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        intent.setData(Uri.parse("package:" + getPackageName()));
-        startActivity(intent);
+        intent.setData(Uri.parse("package:" + context.getPackageName()));
+        context.startActivity(intent);
     }
 }

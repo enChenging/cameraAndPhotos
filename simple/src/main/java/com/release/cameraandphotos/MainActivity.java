@@ -14,6 +14,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.release.alert.Alert;
 import com.release.cameralibrary.PermissionUtils;
 import com.release.cameralibrary.Utils;
@@ -32,7 +34,7 @@ import java.io.File;
  * @Describe
  */
 
-public class MainActivity extends PermissionUtils {
+public class MainActivity extends AppCompatActivity {
 
     private Alert mAlert, mAlert2, mAlert3;
     private Bitmap mBitmap;
@@ -67,7 +69,7 @@ public class MainActivity extends PermissionUtils {
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 if (arg2 == Bimp.selectBitmap.size()) {
                     Type = 3;
-                    if (checkAndReqkPermission(MainActivity.this, needPermissions))
+                    if (PermissionUtils.checkAndReqkPermission(MainActivity.this, PermissionUtils.needPermissions))
                         mAlert3.show();
                 } else {
                     Intent intent = new Intent(MainActivity.this, PhotoActivity.class);
@@ -132,12 +134,12 @@ public class MainActivity extends PermissionUtils {
         switch (view.getId()) {
             case R.id.btn:
                 Type = 1;
-                if (checkAndReqkPermission(this, needPermissions))
+                if (PermissionUtils.checkAndReqkPermission(this, PermissionUtils.needPermissions))
                     mAlert.show();
                 break;
             case R.id.btn2:
                 Type = 2;
-                if (checkAndReqkPermission(this, needPermissions))
+                if (PermissionUtils.checkAndReqkPermission(this, PermissionUtils.needPermissions))
                     mAlert2.show();
                 break;
             case R.id.btn3: {
@@ -228,10 +230,10 @@ public class MainActivity extends PermissionUtils {
     public void onRequestPermissionsResult(int requestCode,
                                            String[] permissions, int[] paramArrayOfInt) {
         if (requestCode == PermissionUtils.PERMISSON_REQUESTCODE) {
-            if (verifyPermissions(paramArrayOfInt)) {
+            if (PermissionUtils.verifyPermissions(paramArrayOfInt)) {
                 hasPermission();
             } else {
-                showMissingPermissionDialog();
+                PermissionUtils.showMissingPermissionDialog(this);
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.release.cameraandphotos;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,7 +32,7 @@ import java.io.File;
  * @Describe
  */
 
-public class MainActivity extends PermissionUtils implements PermissionUtils.PermissionListener {
+public class MainActivity extends PermissionUtils {
 
     private Alert mAlert, mAlert2, mAlert3;
     private Bitmap mBitmap;
@@ -52,7 +53,6 @@ public class MainActivity extends PermissionUtils implements PermissionUtils.Per
     private void initView() {
         mIv_image = findViewById(R.id.iv_image);
         gridview = findViewById(R.id.gridview);
-        setPermissonListener(this);
 
         Bimp.selectBitmap.clear();// 清空图册
         Bimp.max = 3;// 初始化最大选择数
@@ -67,7 +67,8 @@ public class MainActivity extends PermissionUtils implements PermissionUtils.Per
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
                 if (arg2 == Bimp.selectBitmap.size()) {
                     Type = 3;
-                    mAlert3.show();
+                    if (checkAndReqkPermission(MainActivity.this, needPermissions))
+                        mAlert3.show();
                 } else {
                     Intent intent = new Intent(MainActivity.this, PhotoActivity.class);
                     intent.putExtra("ID", arg2);
@@ -129,20 +130,16 @@ public class MainActivity extends PermissionUtils implements PermissionUtils.Per
 
     public void btnClick(View view) {
         switch (view.getId()) {
-            case R.id.btn: {
+            case R.id.btn:
                 Type = 1;
-                if (checkPermissions(needPermissions)) {
+                if (checkAndReqkPermission(this, needPermissions))
                     mAlert.show();
-                }
-            }
-            break;
-            case R.id.btn2: {
+                break;
+            case R.id.btn2:
                 Type = 2;
-                if (checkPermissions(needPermissions)) {
+                if (checkAndReqkPermission(this, needPermissions))
                     mAlert2.show();
-                }
-            }
-            break;
+                break;
             case R.id.btn3: {
                 Bimp.selectBitmap.clear();
                 adapter.notifyDataSetChanged();
@@ -226,12 +223,20 @@ public class MainActivity extends PermissionUtils implements PermissionUtils.Per
         //....
     }
 
-    @Override
-    public void noPermission() {
 
+    @TargetApi(23)
+    public void onRequestPermissionsResult(int requestCode,
+                                           String[] permissions, int[] paramArrayOfInt) {
+        if (requestCode == PermissionUtils.PERMISSON_REQUESTCODE) {
+            if (verifyPermissions(paramArrayOfInt)) {
+                hasPermission();
+            } else {
+                showMissingPermissionDialog();
+            }
+        }
     }
 
-    @Override
+
     public void hasPermission() {
         switch (Type) {
             case 1:

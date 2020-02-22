@@ -1,13 +1,13 @@
 package com.release.cameralibrary.photo;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.release.cameralibrary.R;
@@ -74,7 +74,7 @@ public class GridAdapter extends BaseAdapter {
                     .asDrawable()
                     .load(ContextCompat.getDrawable(mContext, R.mipmap.icon_add_photo))
                     .into(holder.image);
-            if (position == 3) {
+            if (position == Bimp.max) {
                 holder.image.setVisibility(View.GONE);
             }
         } else {

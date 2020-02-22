@@ -11,11 +11,12 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.StrictMode;
 import android.provider.MediaStore;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.core.content.FileProvider;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -41,6 +42,8 @@ public class Utils {
     public static void camera(Activity activity) {
         String state = Environment.getExternalStorageState();
         if (state.equals(Environment.MEDIA_MOUNTED)) {
+            StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
+            StrictMode.setVmPolicy(builder.build());
             mTempFile = new File(Environment.getExternalStorageDirectory(), imageName);
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, getUriForFile(activity, mTempFile));
@@ -55,11 +58,12 @@ public class Utils {
             throw new NullPointerException();
         }
         Uri uri;
-        if (Build.VERSION.SDK_INT >= 24) {
-            uri = FileProvider.getUriForFile(context, context.getPackageName() + ".FileProvider", file);
-        } else {
-            uri = Uri.fromFile(file);
-        }
+//        if (Build.VERSION.SDK_INT >= 24) {
+//            uri = FileProvider.getUriForFile(context, context.getPackageName() + ".FileProvider", file);
+//        } else {
+//            uri = Uri.fromFile(file);
+//        }
+        uri = Uri.fromFile(file);
         return uri;
     }
 

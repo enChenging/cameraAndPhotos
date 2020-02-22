@@ -1,2 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.release.cameralibrary" />
+    package="com.release.cameralibrary">
+    <application>
+        <activity
+            android:name="com.release.cameralibrary.photo.ImageGridActivity"
+            android:launchMode="singleTop" />
+        <activity
+            android:name="com.release.cameralibrary.photo.PhotoActivity"
+            android:launchMode="singleTop" />
+    </application>
+</manifest>

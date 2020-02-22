@@ -15,18 +15,6 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="com.release.cameraandphotos.FileProvider"
-            android:exported="false"
-            android:grantUriPermissions="true"
-            tools:replace="android:authorities">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"
-                tools:replace="android:resource" />
-        </provider>
-
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,11 +22,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name="com.release.cameralibrary.photo.ImageGridActivity"
-            android:launchMode="singleTop"/>
-        <activity android:name="com.release.cameralibrary.photo.PhotoActivity"
-            android:launchMode="singleTop" />
 
     </application>
 

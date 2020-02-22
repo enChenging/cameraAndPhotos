@@ -10,11 +10,11 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.release.alert.Alert;
 import com.release.cameralibrary.PermissionUtils;
@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
 
         gridview.setSelector(new ColorDrawable(Color.TRANSPARENT));
         adapter = new GridAdapter(this);
-        adapter.update();
         gridview.setAdapter(adapter);
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -127,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        adapter.notifyDataSetChanged();
+        adapter.update();
     }
 
     public void btnClick(View view) {
@@ -142,11 +141,11 @@ public class MainActivity extends AppCompatActivity {
                 if (PermissionUtils.checkAndReqkPermission(this, PermissionUtils.needPermissions))
                     mAlert2.show();
                 break;
-            case R.id.btn3: {
+            case R.id.btn3:
+                //清空图片
                 Bimp.selectBitmap.clear();
                 adapter.notifyDataSetChanged();
                 mIv_image.setImageBitmap(null);
-            }
             break;
         }
     }
@@ -173,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
                             Utils.cropPhoto(this, imageContentUri);
                             break;
                         case 3:
+                            //
                             ImageItem takePhoto = new ImageItem();
                             takePhoto.setImagePath(Utils.mTempFile.getPath());
                             Bimp.selectBitmap.add(takePhoto);

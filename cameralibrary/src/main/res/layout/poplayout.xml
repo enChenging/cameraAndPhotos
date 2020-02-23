@@ -3,13 +3,14 @@
     android:id="@+id/popLayout"
     android:layout_width="160dp"
     android:layout_height="match_parent"
+    android:background="@android:color/holo_blue_dark"
     android:orientation="vertical">
 
     <ListView
         android:id="@+id/lv_content"
         android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:divider="@color/line_1px"
+        android:divider="#E1E1E1"
         android:dividerHeight="1px"
         android:fadingEdge="none"
         android:scrollbars="none" >

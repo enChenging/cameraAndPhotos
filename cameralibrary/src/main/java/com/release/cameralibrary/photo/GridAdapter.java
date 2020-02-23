@@ -73,6 +73,7 @@ public class GridAdapter extends BaseAdapter {
             Glide.with(mContext)
                     .asDrawable()
                     .load(ContextCompat.getDrawable(mContext, R.mipmap.icon_add_photo))
+//                    .centerCrop()
                     .into(holder.image);
             if (position == Bimp.max) {
                 holder.image.setVisibility(View.GONE);
@@ -81,11 +82,13 @@ public class GridAdapter extends BaseAdapter {
             if (Bimp.selectBitmap.get(position).getImagePath().contains("http"))
                 Glide.with(mContext)
                         .load(Bimp.selectBitmap.get(position).getImagePath())
+//                        .centerCrop()
                         .into(holder.image);
             else
                 Glide.with(mContext)
                         .asBitmap()
                         .load(Utils.decodeFile(Bimp.selectBitmap.get(position).getImagePath()))
+//                        .centerCrop()
                         .into(holder.image);
         }
         return convertView;

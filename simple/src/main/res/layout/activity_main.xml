@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FDFCFC"
     android:orientation="vertical">
 
     <Button
@@ -16,7 +17,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="btnClick"
-        android:text="拍照(裁剪)+选取单张图片(裁剪)" />
+        android:text="拍照(自带裁剪)+选取单张图片(自带裁剪)" />
+
+   <Button
+       android:id="@+id/btn4"
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content"
+       android:onClick="btnClick"
+       android:text="拍照(三方裁剪)+选取单张图片(三方裁剪)"
+       />
 
     <Button
         android:id="@+id/btn3"
@@ -25,13 +34,15 @@
         android:onClick="btnClick"
         android:text="清空图片" />
 
+
     <ImageView
         android:id="@+id/iv_image"
         android:layout_marginTop="40dp"
         android:layout_gravity="center"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="120dp"
         />
+
     <com.release.cameralibrary.photo.GridViewNoScroll
         android:id="@+id/gridview"
         android:layout_width="match_parent"

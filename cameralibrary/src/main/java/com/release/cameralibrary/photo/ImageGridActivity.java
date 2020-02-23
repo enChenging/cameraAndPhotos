@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,6 +19,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.RelativeLayout;
@@ -25,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.release.cameralibrary.R;
+import com.release.cameralibrary.StatusBarUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +39,7 @@ import java.util.List;
  * @Describe 图片的目录详细页
  */
 
-public class ImageGridActivity extends Activity implements OnClickListener {
+public class ImageGridActivity extends AppCompatActivity implements OnClickListener {
     private List<ImageBucket> contentList;
     private RelativeLayout title;
 
@@ -56,8 +59,10 @@ public class ImageGridActivity extends Activity implements OnClickListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_image_grid);
+
+        if (Bimp.themeColor != 0)
+            StatusBarUtil.setColorNoTranslucent(this, getResources().getColor(Bimp.themeColor));
 
         helper = AlbumHelper.getHelper();
         helper.init(getApplicationContext());
@@ -97,7 +102,7 @@ public class ImageGridActivity extends Activity implements OnClickListener {
 
         bt = (Button) findViewById(R.id.bt);
 
-        if (Bimp.themeColor!=0){
+        if (Bimp.themeColor != 0) {
             bt.setBackground(getResources().getDrawable(Bimp.themeColor));
             title.setBackground(getResources().getDrawable(Bimp.themeColor));
         }
@@ -123,6 +128,10 @@ public class ImageGridActivity extends Activity implements OnClickListener {
         pop.setOutsideTouchable(true);
         pop.setAnimationStyle(R.style.PopupAnimation1);
         popListView = (ListView) popLayout.findViewById(R.id.lv_content);
+        LinearLayout lLlayout = popLayout.findViewById(R.id.popLayout);
+        if (Bimp.themeColor != 0) {
+            lLlayout.setBackground(getResources().getDrawable(Bimp.themeColor));
+        }
         popListView.setAdapter(new MyAdapter());
         popListView.setOnItemClickListener(new OnItemClickListener() {
 

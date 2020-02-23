@@ -9,17 +9,15 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.provider.MediaStore;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.widget.Toast;
 
-
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,26 +29,37 @@ import java.io.InputStream;
  */
 public class Utils {
 
-    public static Uri mUritempFile;
+    public static Uri mCropImageUri;
     public static File mTempFile;
     public static final int CAMERA_REQUEST_CODE = 101, PHOTO_REQUEST_CODE = 102, CROP_PHOTO_REUQEST_CODE = 103;
-    public static String imageName = System.currentTimeMillis() + ".png";
+    private static String imagePath;
+    private static String imageName = System.currentTimeMillis() + ".png";
 
     /**
      * 拍照
      */
     public static void camera(Activity activity) {
-        String state = Environment.getExternalStorageState();
-        if (state.equals(Environment.MEDIA_MOUNTED)) {
+        imagePath = Environment.getExternalStorageDirectory() + "/" + activity.getPackageName() + "/cameraImage/";
+        mTempFile = getFile(imagePath,imageName);
+        Log.i("cyc", "camera:" + mTempFile.toString());
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.setVmPolicy(builder.build());
-            mTempFile = new File(Environment.getExternalStorageDirectory(), imageName);
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, getUriForFile(activity, mTempFile));
             activity.startActivityForResult(intent, CAMERA_REQUEST_CODE);
         } else {
             Toast.makeText(activity, "请确认已插入SD卡", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    private static File getFile(String path,String imageName) {
+
+        File file = new File(path);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        return new File(path,imageName);
     }
 
     private static Uri getUriForFile(Context context, File file) {
@@ -87,7 +96,10 @@ public class Utils {
      * @param uri
      */
     public static void cropPhoto(Activity activity, Uri uri) {
-        mUritempFile = Uri.parse("file://" + "/" + Environment.getExternalStorageDirectory().getPath() + "/" + imageName);
+        imagePath = Environment.getExternalStorageDirectory() + "/" + activity.getPackageName() + "/cameraImage/";
+        mTempFile = getFile(imagePath,imageName);
+        mCropImageUri = Uri.parse("file://" + "/" + imagePath + imageName);
+        Log.i("cyc", "cropPhoto:" + mCropImageUri.toString());
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri, "image/*");
         intent.putExtra("crop", "true");
@@ -96,26 +108,21 @@ public class Utils {
         intent.putExtra("outputX", 250);
         intent.putExtra("outputY", 250);
         intent.putExtra("outputFormat", Bitmap.CompressFormat.PNG.toString());
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, mUritempFile);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, mCropImageUri);
         activity.startActivityForResult(intent, CROP_PHOTO_REUQEST_CODE);
     }
 
     /**
      * 将图片保存到sd卡
      *
-     * @param sdPath
+     * @param context
      * @param bitmap
      * @return
      */
-    public static File setPicToSdCard(String sdPath,Bitmap bitmap) {
-
-        File file = new File(sdPath);
-        if (!file.exists()) {
-            file.mkdirs();
-        }
-        file = new File(sdPath + imageName);
+    public static File setPicToSdCard(Context context, Bitmap bitmap) {
+        String path = Environment.getExternalStorageDirectory() + "/" + context.getPackageName() + "/cameraImage/";
+        File file = getFile(path,imageName);
         try {
-            file.createNewFile();
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, bos);
             bos.flush();
@@ -125,6 +132,8 @@ public class Utils {
         }
         return file;
     }
+
+
 
     /**
      * 图片压缩
@@ -185,6 +194,16 @@ public class Utils {
         try {
             bitmap = resolveUriForBitmap(context, uri, options);
         } catch (Throwable e) {
+            e.printStackTrace();
+        }
+        return bitmap;
+    }
+
+    public static Bitmap uriToBitmap(Context context, Uri uri) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(uri));
+        } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
         return bitmap;

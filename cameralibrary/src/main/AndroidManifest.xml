@@ -7,5 +7,7 @@
         <activity
             android:name="com.release.cameralibrary.photo.PhotoActivity"
             android:launchMode="singleTop" />
+        <activity android:name="com.soundcloud.android.crop.CropImageActivity"
+            android:launchMode="singleTop" />
     </application>
 </manifest>

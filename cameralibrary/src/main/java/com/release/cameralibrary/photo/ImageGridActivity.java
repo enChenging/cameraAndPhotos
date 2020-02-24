@@ -279,7 +279,7 @@ public class ImageGridActivity extends AppCompatActivity implements OnClickListe
 
                 @Override
                 public void onClick(View v) {
-                    Log.i("cyc", "onClick: === " + (Bimp.selectBitmap.size() + Bimp.tempSelectBitmap.size()));
+//                    Log.i("cyc", "onClick: === " + (Bimp.selectBitmap.size() + Bimp.tempSelectBitmap.size()));
 
                     if (Bimp.selectBitmap.size() + Bimp.tempSelectBitmap.size() < Bimp.max) {
                         item.isSelected = !item.isSelected;

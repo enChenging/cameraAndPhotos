@@ -13,8 +13,8 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 
 import com.release.alert.Alert;
+import com.release.cameralibrary.CpUtils;
 import com.release.cameralibrary.PermissionUtils;
-import com.release.cameralibrary.Utils;
 import com.release.cameralibrary.photo.Bimp;
 import com.release.cameralibrary.photo.GridAdapter;
 import com.release.cameralibrary.photo.GridViewNoScroll;
@@ -43,15 +43,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mIv_image = findViewById(R.id.iv_image);
+        gridview = findViewById(R.id.gridview);
+
         initView();
     }
 
     private void initView() {
-        mIv_image = findViewById(R.id.iv_image);
-        gridview = findViewById(R.id.gridview);
-
         Bimp.selectBitmap.clear();// 清空图册
-        Bimp.max = 3;// 初始化最大选择数
+        Bimp.max = 5;// 初始化最大选择数
         Bimp.themeColor = R.color.colorPrimary;//设置图册主题风格
 
         gridview.setSelector(new ColorDrawable(Color.TRANSPARENT));
@@ -80,9 +81,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onItemClick(View view, int position) {
                         if (position == 0) {
-                            Utils.camera(MainActivity.this);
+                            CpUtils.camera(MainActivity.this);
                         } else {
-                            Utils.photo(MainActivity.this);
+                            CpUtils.photo(MainActivity.this);
                         }
                     }
                 });
@@ -94,9 +95,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onItemClick(View view, int position) {
                         if (position == 0) {
-                            Utils.camera(MainActivity.this);
+                            CpUtils.camera(MainActivity.this);
                         } else {
-                            Utils.photo(MainActivity.this);
+                            CpUtils.photo(MainActivity.this);
                         }
                     }
                 });
@@ -108,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onItemClick(View view, int position) {
                         if (position == 0) {
-                            Utils.camera(MainActivity.this);
+                            CpUtils.camera(MainActivity.this);
                         } else {
                             startActivity(new Intent(MainActivity.this, ImageGridActivity.class));
                             overridePendingTransition(R.anim.activity_translate_in, R.anim.activity_translate_out);
@@ -123,9 +124,9 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onItemClick(View view, int position) {
                         if (position == 0) {
-                            Utils.camera(MainActivity.this);
+                            CpUtils.camera(MainActivity.this);
                         } else {
-                            Utils.photo(MainActivity.this);
+                            CpUtils.photo(MainActivity.this);
                         }
                     }
                 });
@@ -185,52 +186,53 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != RESULT_OK) return;
         switch (requestCode) {
-            case Utils.CAMERA_REQUEST_CODE:
+            case CpUtils.CAMERA_REQUEST_CODE:
                 switch (Type) {
                     case 1:
                         //拍照 压缩图片
-                        Bitmap bitmap = Utils.decodeFile(Utils.mTempFile.getPath());
+                        Bitmap bitmap = CpUtils.zipFileFromPath(CpUtils.mTempFile.getPath());
                         mIv_image.setImageBitmap(bitmap);
                         uploadFile(bitmap);
                         break;
                     case 2:
                         //拍照 自带裁剪图片
-                        Utils.cropPhoto(this, Utils.getImageContentUri(MainActivity.this, Utils.mTempFile));
+                        CpUtils.cropPhoto(this, CpUtils.getUriFromFile(MainActivity.this, CpUtils.mTempFile));
                         break;
                     case 3:
                         //拍照 (九宫格图，图片加载时统一做了压缩)
                         ImageItem takePhoto = new ImageItem();
-                        takePhoto.setImagePath(Utils.mTempFile.getPath());
+                        takePhoto.setImagePath(CpUtils.mTempFile.getPath());//Bimp.selectBitmap.get(0).getBitmap()获取时做了压缩
                         Bimp.selectBitmap.add(takePhoto);
                         break;
                     case 4:
                         //拍照 三方裁剪图片
-                        Crop.of(Utils.getImageContentUri(MainActivity.this, Utils.mTempFile), Uri.fromFile(new File(getCacheDir(), "cropped" + System.currentTimeMillis()))).asSquare().start(this);
+                        Crop.of(CpUtils.getUriFromFile(MainActivity.this, CpUtils.mTempFile), Uri.fromFile(new File(getCacheDir(), "cropped" + System.currentTimeMillis()))).asSquare().start(this);
                         break;
                 }
                 break;
-            case Utils.PHOTO_REQUEST_CODE:
+            case CpUtils.PHOTO_REQUEST_CODE:
+                Uri uri = data.getData();
                 switch (Type) {
                     case 1:
                         //图册 压缩图片
-                        Bitmap bitmap = Utils.decodeUri(this, data.getData());
+                        Bitmap bitmap = CpUtils.zipFileFromUri(this, uri);
                         mIv_image.setImageBitmap(bitmap);
                         uploadFile(bitmap);
                         break;
                     case 2:
                         //图册 自带裁剪图片
-                        Utils.cropPhoto(this, data.getData());
+                        CpUtils.cropPhoto(this, uri);
                         break;
                     case 4:
                         //图册 三方裁剪图片
-                        Crop.of(data.getData(), Uri.fromFile(new File(getCacheDir(), "cropped" + System.currentTimeMillis()))).asSquare().start(this);
+                        Crop.of(uri, Uri.fromFile(new File(getCacheDir(), "cropped" + System.currentTimeMillis()))).asSquare().start(this);
                         break;
                 }
                 break;
-            case Utils.CROP_PHOTO_REUQEST_CODE:
+            case CpUtils.CROP_PHOTO_REUQEST_CODE:
                 //自带裁剪图片完成
                 try {
-                    Bitmap bitmap = Utils.uriToBitmap(this, Utils.mCropImageUri);
+                    Bitmap bitmap = CpUtils.getBitmapFromUri(this, CpUtils.mCropImageUri);
                     mIv_image.setImageBitmap(bitmap);
                     uploadFile(bitmap);
                 } catch (Exception e) {
@@ -240,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
             case Crop.REQUEST_CROP:
                 //三方裁剪图片完成
                 Uri output = Crop.getOutput(data);
-                Bitmap bitmap = Utils.decodeUri(this, output);
+                Bitmap bitmap = CpUtils.zipFileFromUri(this, output);
                 mIv_image.setImageBitmap(bitmap);
                 uploadFile(bitmap);
                 break;
@@ -267,7 +269,7 @@ public class MainActivity extends AppCompatActivity {
      * @param bitmap
      */
     private void uploadFile(Bitmap bitmap) {
-        File picFile = Utils.setPicToSdCard(this, bitmap);
+        File picFile = CpUtils.getFileFromBitmap(this, bitmap);
         //....
     }
 

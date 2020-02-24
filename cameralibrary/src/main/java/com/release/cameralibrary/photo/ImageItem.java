@@ -2,7 +2,8 @@ package com.release.cameralibrary.photo;
 
 import android.graphics.Bitmap;
 
-import java.io.IOException;
+import com.release.cameralibrary.CpUtils;
+
 import java.io.Serializable;
 
 public class ImageItem implements Serializable {
@@ -37,11 +38,7 @@ public class ImageItem implements Serializable {
 
     public Bitmap getBitmap() {
         if (bitmap == null) {
-            try {
-                bitmap = Bimp.revitionImageSize(imagePath);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            bitmap = CpUtils.zipFileFromPath(imagePath);
         }
         return bitmap;
     }

@@ -11,7 +11,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.release.cameralibrary.R;
-import com.release.cameralibrary.Utils;
+import com.release.cameralibrary.CpUtils;
 
 
 /**
@@ -43,8 +43,8 @@ public class GridAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        if (Bimp.selectBitmap.size() == 3) {
-            return 3;
+        if (Bimp.selectBitmap.size() == Bimp.max) {
+            return Bimp.max;
         }
         return (Bimp.selectBitmap.size() + 1);
     }
@@ -87,7 +87,7 @@ public class GridAdapter extends BaseAdapter {
             else
                 Glide.with(mContext)
                         .asBitmap()
-                        .load(Utils.decodeFile(Bimp.selectBitmap.get(position).getImagePath()))
+                        .load(Bimp.selectBitmap.get(position).getBitmap())
 //                        .centerCrop()
                         .into(holder.image);
         }

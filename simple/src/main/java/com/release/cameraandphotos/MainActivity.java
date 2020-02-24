@@ -184,6 +184,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
         if (resultCode != RESULT_OK) return;
         switch (requestCode) {
             case CpUtils.CAMERA_REQUEST_CODE:
@@ -247,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
                 uploadFile(bitmap);
                 break;
         }
-        super.onActivityResult(requestCode, resultCode, data);
+
     }
 
     @TargetApi(23)

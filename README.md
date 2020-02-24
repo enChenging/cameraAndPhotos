@@ -25,139 +25,118 @@ allprojects {
  在build.gradle文件中的dependencies下添加引用：
 	
 ```java
-implementation 'com.github.enChenging:cameraAndPhotos:1.2.2'
+implementation 'com.github.enChenging:cameraAndPhotos:1.2.3'
 ```
 详细使用见工程里的[simple](https://github.com/enChenging/cameraAndPhotos/tree/master/simple)
 
 使用核心代码：
 ```java
+
 Bimp.selectBitmap.clear();// 清空图册
-Bimp.max = 3;// 初始化最大选择数
+Bimp.max = 5;// 初始化最大选择数
 Bimp.themeColor = R.color.colorPrimary;//设置图册主题风格
 
-    gridview.setSelector(new ColorDrawable(Color.TRANSPARENT));
+gridview.setSelector(new ColorDrawable(Color.TRANSPARENT));
 adapter = new GridAdapter(this);
-    adapter.update();
-    gridview.setAdapter(adapter);
-    gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+gridview.setAdapter(adapter);
+gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
     public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-        if (arg2 == Bimp.selectBitmap.size()) {
-            Type = 3;
-            mAlert3.show();
-        } else {
-            Intent intent = new Intent(MainActivity.this, PhotoActivity.class);
-            intent.putExtra("ID", arg2);
-            startActivity(intent);
-        }
+	if (arg2 == Bimp.selectBitmap.size()) {
+	   //拍照或相册
+	} else {
+	    Intent intent = new Intent(MainActivity.this, PhotoActivity.class);
+	    intent.putExtra("ID", arg2);
+	    startActivity(intent);
+	}
     }
 });
 
-mAlert = new Alert(MainActivity.this)
-            .builder(Alert.Type.BOTTOM)
-            .addItem("拍照")
-            .addItem("图片")
-            .setOnItemClickListener(new Alert.OnAlertItemClickListener() {
-    @Override
-    public void onItemClick(View view, int position) {
-        if (position == 0) {
-            Utils.camera(MainActivity.this);
-        } else {
-            Utils.photo(MainActivity.this);
-        }
-    }
-});
-mAlert2 = new Alert(MainActivity.this)
-            .builder(Alert.Type.BOTTOM)
-            .addItem("拍照(裁剪)")
-            .addItem("图片(裁剪)")
-            .setOnItemClickListener(new Alert.OnAlertItemClickListener() {
-    @Override
-    public void onItemClick(View view, int position) {
-        if (position == 0) {
-            Utils.camera(MainActivity.this);
-        } else {
-            Utils.photo(MainActivity.this);
-        }
-    }
-});
-mAlert3 = new Alert(MainActivity.this)
-            .builder(Alert.Type.BOTTOM)
-            .addItem("拍照")
-            .addItem("图片(选取多张图片)")
-            .setOnItemClickListener(new Alert.OnAlertItemClickListener() {
-    @Override
-    public void onItemClick(View view, int position) {
-        if (position == 0) {
-            Utils.camera(MainActivity.this);
-        } else {
-            startActivity(new Intent(MainActivity.this, ImageGridActivity.class));
-            overridePendingTransition(R.anim.activity_translate_in, R.anim.activity_translate_out);
-        }
-    }
-});
-
-@SuppressLint("StringFormatInvalid")
+CpUtils.camera(MainActivity.this);//拍照
+CpUtils.photo(MainActivity.this);//相册选取单张
+startActivity(new Intent(MainActivity.this, ImageGridActivity.class));//相册选取多张
+       
+       
+       
+   
 @Override
 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-    switch (requestCode) {
-        case Utils.CAMERA_REQUEST_CODE:
-            if (resultCode == RESULT_OK) {
-                switch (Type) {
-                    case 1:
-                        //压缩图片
-                        Bitmap bitmap = Utils.decodeFile(Utils.mTempFile.getAbsolutePath());
-                        mIv_image.setImageBitmap(bitmap);
-                        File picFile = Utils.setPicToSdCard(PATH_SD_ICON, bitmap);
-                        uploadPicTask(picFile);
-                        break;
-                    case 2:
-                        //裁剪图片
-                        Uri imageContentUri = Utils.getImageContentUri(MainActivity.this, Utils.mTempFile);
-                        Utils.cropPhoto(this, imageContentUri);
-                        break;
-                    case 3:
-                        ImageItem takePhoto = new ImageItem();
-                        takePhoto.setImagePath(Utils.mTempFile.getPath());
-                        Bimp.selectBitmap.add(takePhoto);
-                        break;
-
-                }
-            }
-            break;
-        case Utils.PHOTO_REQUEST_CODE:
-            if (resultCode == RESULT_OK) {
-                switch (Type) {
-                    case 1: {
-                        //压缩图片
-                        Bitmap bitmap = Utils.decodeUri(this, data.getData());
-                        mIv_image.setImageBitmap(bitmap);
-                        break;
-                    }
-                    case 2: {
-                        //裁剪图片
-                        Utils.cropPhoto(this, data.getData());
-                        break;
-                    }
-                }
-            }
-            break;
-        case Utils.CROP_PHOTO_REUQEST_CODE:
-            if (resultCode == RESULT_OK) {
-                try {
-                    mBitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(Utils.mUritempFile));
-                    mIv_image.setImageBitmap(mBitmap);
-                    File picFile = Utils.setPicToSdCard(PATH_SD_ICON, mBitmap);
-                    uploadPicTask(picFile);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            break;
-    }
-    super.onActivityResult(requestCode, resultCode, data);
+if (resultCode != RESULT_OK) return;
+switch (requestCode) {
+    case CpUtils.CAMERA_REQUEST_CODE:
+	switch (Type) {
+	    case 1:
+		//拍照 压缩图片
+		Bitmap bitmap = CpUtils.zipFileFromPath(CpUtils.mTempFile.getPath());
+		mIv_image.setImageBitmap(bitmap);
+		uploadFile(bitmap);
+		break;
+	    case 2:
+		//拍照 自带裁剪图片
+		CpUtils.cropPhoto(this, CpUtils.getUriFromFile(MainActivity.this, CpUtils.mTempFile));
+		break;
+	    case 3:
+		//拍照 (九宫格图，图片加载时统一做了压缩)
+		ImageItem takePhoto = new ImageItem();
+		takePhoto.setImagePath(CpUtils.mTempFile.getPath());//Bimp.selectBitmap.get(0).getBitmap()获取时做了压缩
+		Bimp.selectBitmap.add(takePhoto);
+		break;
+	    case 4:
+		//拍照 三方裁剪图片
+		Crop.of(CpUtils.getUriFromFile(MainActivity.this, CpUtils.mTempFile), Uri.fromFile(new File(getCacheDir(), "cropped" + System.currentTimeMillis()))).asSquare().start(this);
+		break;
+	}
+	break;
+    case CpUtils.PHOTO_REQUEST_CODE:
+	Uri uri = data.getData();
+	switch (Type) {
+	    case 1:
+		//图册 压缩图片
+		Bitmap bitmap = CpUtils.zipFileFromUri(this, uri);
+		mIv_image.setImageBitmap(bitmap);
+		uploadFile(bitmap);
+		break;
+	    case 2:
+		//图册 自带裁剪图片
+		CpUtils.cropPhoto(this, uri);
+		break;
+	    case 4:
+		//图册 三方裁剪图片
+		Crop.of(uri, Uri.fromFile(new File(getCacheDir(), "cropped" + System.currentTimeMillis()))).asSquare().start(this);
+		break;
+	}
+	break;
+    case CpUtils.CROP_PHOTO_REUQEST_CODE:
+	//自带裁剪图片完成
+	try {
+	    Bitmap bitmap = CpUtils.getBitmapFromUri(this, CpUtils.mCropImageUri);
+	    mIv_image.setImageBitmap(bitmap);
+	    uploadFile(bitmap);
+	} catch (Exception e) {
+	    e.printStackTrace();
+	}
+	break;
+    case Crop.REQUEST_CROP:
+	//三方裁剪图片完成
+	Uri output = Crop.getOutput(data);
+	Bitmap bitmap = CpUtils.zipFileFromUri(this, output);
+	mIv_image.setImageBitmap(bitmap);
+	uploadFile(bitmap);
+	break;
 }
+super.onActivityResult(requestCode, resultCode, data);
+}
+
+/**
+* 将图片上传到服务器
+*
+* @param bitmap
+*/
+private void uploadFile(Bitmap bitmap) {
+File picFile = CpUtils.getFileFromBitmap(this, bitmap);
+//....
+}
+
 
 ```
 

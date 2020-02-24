@@ -61,6 +61,7 @@ startActivity(new Intent(MainActivity.this, ImageGridActivity.class));//相册�
    
 @Override
 protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+super.onActivityResult(requestCode, resultCode, data);
 if (resultCode != RESULT_OK) return;
 switch (requestCode) {
     case CpUtils.CAMERA_REQUEST_CODE:
@@ -123,9 +124,8 @@ switch (requestCode) {
 	mIv_image.setImageBitmap(bitmap);
 	uploadFile(bitmap);
 	break;
-}
-super.onActivityResult(requestCode, resultCode, data);
-}
+      }
+ }
 
 /**
 * 将图片上传到服务器
@@ -133,8 +133,8 @@ super.onActivityResult(requestCode, resultCode, data);
 * @param bitmap
 */
 private void uploadFile(Bitmap bitmap) {
-File picFile = CpUtils.getFileFromBitmap(this, bitmap);
-//....
+   File picFile = CpUtils.getFileFromBitmap(this, bitmap);
+   //....
 }
 
 

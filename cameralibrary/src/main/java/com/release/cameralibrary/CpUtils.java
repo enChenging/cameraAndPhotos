@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.StrictMode;
@@ -15,6 +17,12 @@ import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.release.cameralibrary.photo.Bimp;
+import com.release.cameralibrary.photo.GridAdapter;
+import com.release.cameralibrary.photo.GridViewNoScroll;
+import com.release.cameralibrary.photo.ImageGridActivity;
+import com.release.cameralibrary.photo.PhotoActivity;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -37,6 +45,28 @@ public class CpUtils {
     private static String imageName;
     private static String mImagePath;
 
+
+    /**
+     * 初始化配置
+     */
+    public static void init(int max,int themeColor) {
+        Bimp.selectBitmap.clear();// 清空图册
+        Bimp.max = max;// 初始化最大选择数
+        Bimp.themeColor = themeColor;//设置图册主题风格
+    }
+
+    /**
+     * 初始化Gridview配置
+     * @param gridview
+     * @param context
+     */
+    public static GridAdapter initGridAdapter(Context context,GridViewNoScroll gridview) {
+        gridview.setSelector(new ColorDrawable(Color.TRANSPARENT));
+        GridAdapter adapter = new GridAdapter(context);
+        gridview.setAdapter(adapter);
+        return adapter;
+    }
+
     /**
      * 拍照
      */
@@ -57,7 +87,7 @@ public class CpUtils {
     }
 
     /**
-     * 选取图片
+     * 选取单张图片
      */
     public static void photo(Activity activity) {
         String state = Environment.getExternalStorageState();
@@ -68,6 +98,23 @@ public class CpUtils {
         } else {
             Toast.makeText(activity, "请确认已插入SD卡", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    /**
+     * 选取多张图片
+     */
+    public static void galleryPhoto(Activity activity) {
+        activity.startActivity(new Intent(activity, ImageGridActivity.class));
+        activity.overridePendingTransition(R.anim.activity_translate_in, R.anim.activity_translate_out);
+    }
+
+    /**
+     * 查看单张图片
+     */
+    public static void lookPhoto(Context context,int position) {
+        Intent intent = new Intent(context, PhotoActivity.class);
+        intent.putExtra("ID", position);
+        context.startActivity(intent);
     }
 
     /**
@@ -101,6 +148,7 @@ public class CpUtils {
             mImagePath = Environment.getExternalStorageDirectory() + "/" + activity.getPackageName() + "/cameraImage/";
         return mImagePath;
     }
+
 
     /**
      * 设置手机存储图片路径

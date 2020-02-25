@@ -51,24 +51,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initView() {
-        Bimp.selectBitmap.clear();// 清空图册
-        Bimp.max = 5;// 初始化最大选择数
-        Bimp.themeColor = R.color.colorPrimary;//设置图册主题风格
-
-        gridview.setSelector(new ColorDrawable(Color.TRANSPARENT));
-        adapter = new GridAdapter(this);
-        gridview.setAdapter(adapter);
+        CpUtils.init(5,R.color.colorPrimary);
+        adapter = CpUtils.initGridAdapter(this, gridview);
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
-            public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                if (arg2 == Bimp.selectBitmap.size()) {
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                if (position == Bimp.selectBitmap.size()) {
                     Type = 3;
                     if (PermissionUtils.checkAndReqkPermission(MainActivity.this, PermissionUtils.needPermissions))
                         mAlert3.show();
                 } else {
-                    Intent intent = new Intent(MainActivity.this, PhotoActivity.class);
-                    intent.putExtra("ID", arg2);
-                    startActivity(intent);
+                    CpUtils.lookPhoto(MainActivity.this,position);
                 }
             }
         });
@@ -111,8 +104,7 @@ public class MainActivity extends AppCompatActivity {
                         if (position == 0) {
                             CpUtils.camera(MainActivity.this);
                         } else {
-                            startActivity(new Intent(MainActivity.this, ImageGridActivity.class));
-                            overridePendingTransition(R.anim.activity_translate_in, R.anim.activity_translate_out);
+                            CpUtils.galleryPhoto(MainActivity.this);
                         }
                     }
                 });
@@ -140,6 +132,12 @@ public class MainActivity extends AppCompatActivity {
 
     public void btnClick(View view) {
         switch (view.getId()) {
+            case R.id.btn3:
+                //清空图片
+                Bimp.selectBitmap.clear();
+                adapter.update();
+                mIv_image.setImageBitmap(null);
+                break;
             case R.id.btn:
                 Type = 1;
                 if (PermissionUtils.checkAndReqkPermission(this, PermissionUtils.needPermissions))
@@ -149,12 +147,6 @@ public class MainActivity extends AppCompatActivity {
                 Type = 2;
                 if (PermissionUtils.checkAndReqkPermission(this, PermissionUtils.needPermissions))
                     mAlert2.show();
-                break;
-            case R.id.btn3:
-                //清空图片
-                Bimp.selectBitmap.clear();
-                adapter.update();
-                mIv_image.setImageBitmap(null);
                 break;
             case R.id.btn4:
                 Type = 4;

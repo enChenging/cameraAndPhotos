@@ -3,8 +3,6 @@ package com.release.cameraandphotos;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -18,9 +16,7 @@ import com.release.cameralibrary.PermissionUtils;
 import com.release.cameralibrary.photo.Bimp;
 import com.release.cameralibrary.photo.GridAdapter;
 import com.release.cameralibrary.photo.GridViewNoScroll;
-import com.release.cameralibrary.photo.ImageGridActivity;
 import com.release.cameralibrary.photo.ImageItem;
-import com.release.cameralibrary.photo.PhotoActivity;
 import com.soundcloud.android.crop.Crop;
 
 import java.io.File;
@@ -33,7 +29,7 @@ import java.io.File;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Alert mAlert, mAlert2, mAlert3, mAlert4;
+    private Alert mAlert;
     private ImageView mIv_image;
     private GridViewNoScroll gridview;
     private GridAdapter adapter;
@@ -46,25 +42,10 @@ public class MainActivity extends AppCompatActivity {
 
         mIv_image = findViewById(R.id.iv_image);
         gridview = findViewById(R.id.gridview);
-
         initView();
     }
 
     private void initView() {
-        CpUtils.init(5,R.color.colorPrimary);
-        adapter = CpUtils.initGridAdapter(this, gridview);
-        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-                if (position == Bimp.selectBitmap.size()) {
-                    Type = 3;
-                    if (PermissionUtils.checkAndReqkPermission(MainActivity.this, PermissionUtils.needPermissions))
-                        mAlert3.show();
-                } else {
-                    CpUtils.lookPhoto(MainActivity.this,position);
-                }
-            }
-        });
 
         mAlert = new Alert(MainActivity.this)
                 .builder(Alert.Type.BOTTOM)
@@ -75,53 +56,31 @@ public class MainActivity extends AppCompatActivity {
                     public void onItemClick(View view, int position) {
                         if (position == 0) {
                             CpUtils.camera(MainActivity.this);
-                        } else {
+                        } else if (Type != 4) {
                             CpUtils.photo(MainActivity.this);
-                        }
-                    }
-                });
-        mAlert2 = new Alert(MainActivity.this)
-                .builder(Alert.Type.BOTTOM)
-                .addItem("拍照(自带裁剪)")
-                .addItem("图片(自带裁剪)")
-                .setOnItemClickListener(new Alert.OnAlertItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        if (position == 0) {
-                            CpUtils.camera(MainActivity.this);
-                        } else {
-                            CpUtils.photo(MainActivity.this);
-                        }
-                    }
-                });
-        mAlert3 = new Alert(MainActivity.this)
-                .builder(Alert.Type.BOTTOM)
-                .addItem("拍照")
-                .addItem("图片(选取多张图片)")
-                .setOnItemClickListener(new Alert.OnAlertItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        if (position == 0) {
-                            CpUtils.camera(MainActivity.this);
                         } else {
                             CpUtils.galleryPhoto(MainActivity.this);
                         }
                     }
                 });
-        mAlert4 = new Alert(MainActivity.this)
-                .builder(Alert.Type.BOTTOM)
-                .addItem("拍照(三方裁剪)")
-                .addItem("图片(三方裁剪)")
-                .setOnItemClickListener(new Alert.OnAlertItemClickListener() {
-                    @Override
-                    public void onItemClick(View view, int position) {
-                        if (position == 0) {
-                            CpUtils.camera(MainActivity.this);
-                        } else {
-                            CpUtils.photo(MainActivity.this);
-                        }
-                    }
-                });
+
+        /****************选取多张图片的配置及初始化开始*****************************/
+        CpUtils.init(5, R.color.colorPrimary);
+        adapter = CpUtils.initGridAdapter(this, gridview);
+        gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                if (position == Bimp.selectBitmap.size()) {
+                    Type = 4;
+                    if (PermissionUtils.checkAndReqkPermission(MainActivity.this, PermissionUtils.needPermissions))
+                        mAlert.show();
+                } else {
+                    CpUtils.lookPhoto(MainActivity.this, position);
+                }
+            }
+        });
+        /****************选取多张图片的配置及初始化结束*****************************/
+
     }
 
     @Override
@@ -132,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void btnClick(View view) {
         switch (view.getId()) {
-            case R.id.btn3:
+            case R.id.btn_clear:
                 //清空图片
                 Bimp.selectBitmap.clear();
                 adapter.update();
@@ -146,33 +105,15 @@ public class MainActivity extends AppCompatActivity {
             case R.id.btn2:
                 Type = 2;
                 if (PermissionUtils.checkAndReqkPermission(this, PermissionUtils.needPermissions))
-                    mAlert2.show();
+                    mAlert.show();
                 break;
-            case R.id.btn4:
-                Type = 4;
+            case R.id.btn3:
+                Type = 3;
                 if (PermissionUtils.checkAndReqkPermission(this, PermissionUtils.needPermissions))
-                    mAlert4.show();
+                    mAlert.show();
                 break;
         }
     }
-
-    public void hasPermission() {
-        switch (Type) {
-            case 1:
-                mAlert.show();
-                break;
-            case 2:
-                mAlert2.show();
-                break;
-            case 3:
-                mAlert3.show();
-                break;
-            case 4:
-                mAlert4.show();
-                break;
-        }
-    }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -193,14 +134,14 @@ public class MainActivity extends AppCompatActivity {
                         CpUtils.cropPhoto(this, CpUtils.getUriFromFile(MainActivity.this, CpUtils.mTempFile));
                         break;
                     case 3:
-                        //拍照 (九宫格图，图片加载时统一做了压缩)
-                        ImageItem takePhoto = new ImageItem();
-                        takePhoto.setImagePath(CpUtils.mTempFile.getPath());//Bimp.selectBitmap.get(0).getBitmap()获取时做了压缩
-                        Bimp.selectBitmap.add(takePhoto);
-                        break;
-                    case 4:
                         //拍照 三方裁剪图片
                         Crop.of(CpUtils.getUriFromFile(MainActivity.this, CpUtils.mTempFile), Uri.fromFile(new File(getCacheDir(), "cropped" + System.currentTimeMillis()))).asSquare().start(this);
+                        break;
+                    case 4:
+                        //拍照 (九宫格图，图片加载时统一做了压缩)
+                        ImageItem takePhoto = new ImageItem();
+                        takePhoto.setImagePath(CpUtils.mTempFile.getPath());//Bimp.selectBitmap.get(0).getBitmap()获取使用时时做了压缩
+                        Bimp.selectBitmap.add(takePhoto);
                         break;
                 }
                 break;
@@ -217,9 +158,10 @@ public class MainActivity extends AppCompatActivity {
                         //图册 自带裁剪图片
                         CpUtils.cropPhoto(this, uri);
                         break;
-                    case 4:
+                    case 3:
                         //图册 三方裁剪图片
-                        Crop.of(uri, Uri.fromFile(new File(getCacheDir(), "cropped" + System.currentTimeMillis()))).asSquare().start(this);
+                        File file = new File(getCacheDir(), "cropped" + System.currentTimeMillis());
+                        Crop.of(uri, Uri.fromFile(file)).asSquare().start(this);
                         break;
                 }
                 break;
@@ -256,6 +198,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    public void hasPermission() {
+        mAlert.show();
+    }
 
     /**
      * 将图片上传到服务器

@@ -8,10 +8,8 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-
 import com.bumptech.glide.Glide;
 import com.release.cameralibrary.R;
-import com.release.cameralibrary.CpUtils;
 
 
 /**

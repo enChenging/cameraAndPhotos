@@ -20,7 +20,7 @@
         android:text="拍照(自带裁剪)+选取单张图片(自带裁剪)" />
 
    <Button
-       android:id="@+id/btn4"
+       android:id="@+id/btn3"
        android:layout_width="match_parent"
        android:layout_height="wrap_content"
        android:onClick="btnClick"
@@ -28,7 +28,7 @@
        />
 
     <Button
-        android:id="@+id/btn3"
+        android:id="@+id/btn_clear"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="btnClick"

@@ -61,9 +61,6 @@ public class ImageGridActivity extends AppCompatActivity implements OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_image_grid);
 
-        if (Bimp.themeColor != 0)
-            StatusBarUtil.setColorNoTranslucent(this, getResources().getColor(Bimp.themeColor));
-
         helper = AlbumHelper.getHelper();
         helper.init(getApplicationContext());
 
@@ -101,12 +98,6 @@ public class ImageGridActivity extends AppCompatActivity implements OnClickListe
         });
 
         bt = (Button) findViewById(R.id.bt);
-
-        if (Bimp.themeColor != 0) {
-            bt.setBackground(getResources().getDrawable(Bimp.themeColor));
-            title.setBackground(getResources().getDrawable(Bimp.themeColor));
-        }
-
         int count = Bimp.selectBitmap.size() + Bimp.tempSelectBitmap.size();
         if (Bimp.selectBitmap.size() != count) {
             bt.setText("完成" + "(" + count + ")");
@@ -129,9 +120,6 @@ public class ImageGridActivity extends AppCompatActivity implements OnClickListe
         pop.setAnimationStyle(R.style.PopupAnimation1);
         popListView = (ListView) popLayout.findViewById(R.id.lv_content);
         LinearLayout lLlayout = popLayout.findViewById(R.id.popLayout);
-        if (Bimp.themeColor != 0) {
-            lLlayout.setBackground(getResources().getDrawable(Bimp.themeColor));
-        }
         popListView.setAdapter(new MyAdapter());
         popListView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -142,6 +130,13 @@ public class ImageGridActivity extends AppCompatActivity implements OnClickListe
                 pop.dismiss();
             }
         });
+
+        if (Bimp.themeColor != 0) {
+            StatusBarUtil.setColorNoTranslucent(this, getResources().getColor(Bimp.themeColor));
+            bt.setBackground(getResources().getDrawable(Bimp.themeColor));
+            title.setBackground(getResources().getDrawable(Bimp.themeColor));
+            lLlayout.setBackground(getResources().getDrawable(Bimp.themeColor));
+        }
     }
 
 

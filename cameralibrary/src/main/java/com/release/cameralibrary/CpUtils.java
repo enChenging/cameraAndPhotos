@@ -1,7 +1,9 @@
 package com.release.cameralibrary;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -11,18 +13,24 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.release.cameralibrary.photo.Bimp;
 import com.release.cameralibrary.photo.GridAdapter;
 import com.release.cameralibrary.photo.GridViewNoScroll;
 import com.release.cameralibrary.photo.ImageGridActivity;
+import com.release.cameralibrary.photo.ImageItem;
 import com.release.cameralibrary.photo.PhotoActivity;
+import com.yalantis.ucrop.UCrop;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,6 +39,12 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import static android.app.Activity.RESULT_OK;
+import static com.yalantis.ucrop.util.FileUtils.getDataColumn;
+import static com.yalantis.ucrop.util.FileUtils.isDownloadsDocument;
+import static com.yalantis.ucrop.util.FileUtils.isExternalStorageDocument;
+import static com.yalantis.ucrop.util.FileUtils.isMediaDocument;
 
 /**
  * @author Mr.release
@@ -49,18 +63,26 @@ public class CpUtils {
     /**
      * 初始化配置
      */
-    public static void init(int max,int themeColor) {
+    public static void init(int max, int themeColor, int btnColor) {
         Bimp.selectBitmap.clear();// 清空图册
         Bimp.max = max;// 初始化最大选择数
-        Bimp.themeColor = themeColor;//设置图册主题风格
+        Bimp.themeColor = themeColor;//设置主题风格
+        Bimp.btnColor = btnColor;//设置按钮颜色
+    }
+
+    public static void init(int max, int themeColor) {
+        Bimp.selectBitmap.clear();// 清空图册
+        Bimp.max = max;// 初始化最大选择数
+        Bimp.themeColor = themeColor;//设置主题风格
     }
 
     /**
      * 初始化Gridview配置
+     *
      * @param gridview
      * @param context
      */
-    public static GridAdapter initGridAdapter(Context context,GridViewNoScroll gridview) {
+    public static GridAdapter initGridAdapter(Context context, GridViewNoScroll gridview) {
         gridview.setSelector(new ColorDrawable(Color.TRANSPARENT));
         GridAdapter adapter = new GridAdapter(context);
         gridview.setAdapter(adapter);
@@ -79,7 +101,7 @@ public class CpUtils {
             StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.setVmPolicy(builder.build());
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, getUriForFile(activity, mTempFile));
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, getUriForFile(mTempFile));
             activity.startActivityForResult(intent, CAMERA_REQUEST_CODE);
         } else {
             Toast.makeText(activity, "请确认已插入SD卡", Toast.LENGTH_SHORT).show();
@@ -90,10 +112,24 @@ public class CpUtils {
      * 选取单张图片
      */
     public static void photo(Activity activity) {
+        imageName = System.currentTimeMillis() + ".png";
         String state = Environment.getExternalStorageState();
         if (state.equals(Environment.MEDIA_MOUNTED)) {// 如果挂载成功。
             Intent intent = new Intent(Intent.ACTION_PICK, null);
             intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+            activity.startActivityForResult(intent, PHOTO_REQUEST_CODE);
+        } else {
+            Toast.makeText(activity, "请确认已插入SD卡", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public static void photo2(Activity activity) {
+        imageName = System.currentTimeMillis() + ".png";
+        String state = Environment.getExternalStorageState();
+        if (state.equals(Environment.MEDIA_MOUNTED)) {// 如果挂载成功。
+            Intent intent = new Intent(Intent.ACTION_PICK);
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
             activity.startActivityForResult(intent, PHOTO_REQUEST_CODE);
         } else {
             Toast.makeText(activity, "请确认已插入SD卡", Toast.LENGTH_SHORT).show();
@@ -111,7 +147,7 @@ public class CpUtils {
     /**
      * 查看单张图片
      */
-    public static void lookPhoto(Context context,int position) {
+    public static void lookPhoto(Context context, int position) {
         Intent intent = new Intent(context, PhotoActivity.class);
         intent.putExtra("ID", position);
         context.startActivity(intent);
@@ -129,8 +165,13 @@ public class CpUtils {
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri, "image/*");
         intent.putExtra("crop", "true");
-        intent.putExtra("aspectX", 1);
-        intent.putExtra("aspectY", 1);
+        if (Build.MANUFACTURER.equals("HUAWEI")) {
+            intent.putExtra("aspectX", 9998);
+            intent.putExtra("aspectY", 9999);
+        } else {
+            intent.putExtra("aspectX", 1);
+            intent.putExtra("aspectY", 1);
+        }
         intent.putExtra("outputX", 250);
         intent.putExtra("outputY", 250);
         intent.putExtra("outputFormat", Bitmap.CompressFormat.PNG.toString());
@@ -315,6 +356,20 @@ public class CpUtils {
         }
     }
 
+    /***
+     * 获取Uri
+     * 用于调取照相机
+     * @param file
+     * @return
+     */
+    private static Uri getUriForFile(File file) {
+        if (file == null) {
+            throw new NullPointerException();
+        }
+        return Uri.fromFile(file);
+    }
+
+
     /**
      * 创建文件
      *
@@ -330,26 +385,6 @@ public class CpUtils {
         return new File(path, imageName);
     }
 
-    /***
-     * 获取Uri
-     * 用于调取照相机
-     * @param context
-     * @param file
-     * @return
-     */
-    private static Uri getUriForFile(Context context, File file) {
-        if (context == null || file == null) {
-            throw new NullPointerException();
-        }
-        Uri uri;
-//        if (Build.VERSION.SDK_INT >= 24) {
-//            uri = FileProvider.getUriForFile(context, context.getPackageName() + ".FileProvider", file);
-//        } else {
-//            uri = Uri.fromFile(file);
-//        }
-        uri = Uri.fromFile(file);
-        return uri;
-    }
 
     private static void resolveUri(Context context, Uri uri, BitmapFactory.Options options) {
         if (uri == null) {
@@ -413,5 +448,139 @@ public class CpUtils {
         return bitmap;
     }
 
+
+    public static int getScreenWidth(Context context) {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        return metrics.widthPixels;
+    }
+
+    public static int getScreenHeight(Context context) {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        return metrics.heightPixels;
+    }
+
+    @SuppressLint({"NewApi"})
+    public static String getPath(Context context, Uri uri) {
+        boolean isKitKat = Build.VERSION.SDK_INT >= 19;
+        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+            String docId;
+            String[] split;
+            String type;
+            if (isExternalStorageDocument(uri)) {
+                docId = DocumentsContract.getDocumentId(uri);
+                split = docId.split(":");
+                type = split[0];
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                }
+            } else {
+                if (isDownloadsDocument(uri)) {
+                    docId = DocumentsContract.getDocumentId(uri);
+                    Uri contentUri = ContentUris.withAppendedId(Uri.parse("content://downloads/public_downloads"), Long.valueOf(docId));
+                    return getDataColumn(context, contentUri, (String) null, (String[]) null);
+                }
+
+                if (isMediaDocument(uri)) {
+                    docId = DocumentsContract.getDocumentId(uri);
+                    split = docId.split(":");
+                    type = split[0];
+                    Uri contentUri = null;
+                    if ("image".equals(type)) {
+                        contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                    } else if ("video".equals(type)) {
+                        contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                    } else if ("audio".equals(type)) {
+                        contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                    }
+
+                    String selection = "_id=?";
+                    String[] selectionArgs = new String[]{split[1]};
+                    return getDataColumn(context, contentUri, "_id=?", selectionArgs);
+                }
+            }
+        } else {
+            if ("content".equalsIgnoreCase(uri.getScheme())) {
+                return getDataColumn(context, uri, (String) null, (String[]) null);
+            }
+
+            if ("file".equalsIgnoreCase(uri.getScheme())) {
+                return uri.getPath();
+            }
+        }
+
+        return null;
+    }
+
+
+    public static File onActivityResult(int requestCode, int resultCode, Intent data, Activity activity, int type, ImageView imageView) {
+        File mFile = null;
+        if (resultCode != RESULT_OK) return null;
+        switch (requestCode) {
+            case CAMERA_REQUEST_CODE:
+                switch (type) {
+                    case 1:
+                        //拍照 压缩图片
+                        Bitmap bitmap = zipFileFromPath(mTempFile.getPath());
+                        imageView.setImageBitmap(bitmap);
+                        mFile = getFileFromBitmap(activity, bitmap);
+                        break;
+                    case 2:
+                        //拍照 自带裁剪图片
+                        cropPhoto(activity, getUriFromFile(activity, mTempFile));
+                        break;
+                    case 4:
+                        //拍照 (九宫格图，图片加载时统一做了压缩)
+                        ImageItem takePhoto = new ImageItem();
+                        takePhoto.setImagePath(mTempFile.getPath());//Bimp.selectBitmap.get(0).getBitmap()获取使用时时做了压缩
+                        Bimp.selectBitmap.add(takePhoto);
+                        break;
+                    case 5:
+                        //拍照 三方裁剪图片2
+                        String path = getPath(activity, getUriFromFile(activity, mTempFile));
+                        ImageCropManage.startCropActivity(activity, new File(path).getAbsolutePath());
+                        break;
+                }
+                break;
+            case PHOTO_REQUEST_CODE:
+                Uri uri = data.getData();
+                switch (type) {
+                    case 1:
+                        //图册 压缩图片
+                        Bitmap bitmap = zipFileFromUri(activity, uri);
+                        imageView.setImageBitmap(bitmap);
+                        mFile = getFileFromBitmap(activity, bitmap);
+                        break;
+                    case 2:
+                        //图册 自带裁剪图片
+                        cropPhoto(activity, uri);
+                        break;
+                    case 5:
+                        //图册 三方裁剪图片
+                        String path = getPath(activity, data.getData());
+                        ImageCropManage.startCropActivity(activity, new File(path).getAbsolutePath());
+                        break;
+                }
+                break;
+            case CROP_PHOTO_REUQEST_CODE:
+                //自带裁剪图片完成
+                try {
+                    Bitmap bitmap = getBitmapFromUri(activity, mCropImageUri);
+                    imageView.setImageBitmap(bitmap);
+                    mFile = getFileFromBitmap(activity, bitmap);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                break;
+            case UCrop.REQUEST_CROP:
+                //三方裁剪图片完成
+                final Uri resultUri = UCrop.getOutput(data);
+                Bitmap bitmap = zipFileFromUri(activity, resultUri);
+                imageView.setImageBitmap(bitmap);
+                mFile = getFileFromBitmap(activity, bitmap);
+                break;
+        }
+
+        return mFile;
+    }
 
 }

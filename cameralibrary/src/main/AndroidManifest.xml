@@ -7,7 +7,10 @@
         <activity
             android:name="com.release.cameralibrary.photo.PhotoActivity"
             android:launchMode="singleTop" />
-        <activity android:name="com.soundcloud.android.crop.CropImageActivity"
-            android:launchMode="singleTop" />
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:launchMode="singleTop"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            android:screenOrientation="portrait" />
     </application>
 </manifest>

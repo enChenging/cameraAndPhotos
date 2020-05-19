@@ -13,16 +13,17 @@
     <RelativeLayout
         android:id="@+id/photo_relativeLayout"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="@dimen/title_hight"
+        android:background="@color/black"
         android:layout_alignParentTop="true" >
 
         <Button
             android:id="@+id/photo_bt_exit"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
+            android:layout_width="@dimen/title_hight"
+            android:layout_height="@dimen/title_hight"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
-            android:background="@drawable/bt_quxiao" />
+            android:background="@mipmap/toolbar_back_white" />
 
         <Button
             android:id="@+id/photo_bt_del"

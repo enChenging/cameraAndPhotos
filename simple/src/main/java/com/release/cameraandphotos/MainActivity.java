@@ -2,8 +2,6 @@ package com.release.cameraandphotos;
 
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -16,8 +14,6 @@ import com.release.cameralibrary.PermissionUtils;
 import com.release.cameralibrary.photo.Bimp;
 import com.release.cameralibrary.photo.GridAdapter;
 import com.release.cameralibrary.photo.GridViewNoScroll;
-import com.release.cameralibrary.photo.ImageItem;
-import com.soundcloud.android.crop.Crop;
 
 import java.io.File;
 
@@ -54,18 +50,20 @@ public class MainActivity extends AppCompatActivity {
                 .setOnItemClickListener(new Alert.OnAlertItemClickListener() {
                     @Override
                     public void onItemClick(View view, int position) {
-                        if (position == 0) {
+                        if (position == 0) {//拍照
                             CpUtils.camera(MainActivity.this);
-                        } else if (Type != 4) {
-                            CpUtils.photo(MainActivity.this);
-                        } else {
+                        } else if (Type == 4) {//选取多张图片
                             CpUtils.galleryPhoto(MainActivity.this);
+                        } else if (Type == 5) {//拍照+选取单张图片(ucrop裁剪)
+                            CpUtils.photo2(MainActivity.this);
+                        } else {
+                            CpUtils.photo(MainActivity.this);
                         }
                     }
                 });
 
         /****************选取多张图片的配置及初始化开始*****************************/
-        CpUtils.init(5, R.color.colorPrimary);
+        CpUtils.init(5, R.color.colorPrimary, R.color.white);
         adapter = CpUtils.initGridAdapter(this, gridview);
         gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
@@ -91,26 +89,29 @@ public class MainActivity extends AppCompatActivity {
 
     public void btnClick(View view) {
         switch (view.getId()) {
-            case R.id.btn_clear:
-                //清空图片
-                Bimp.selectBitmap.clear();
-                adapter.update();
-                mIv_image.setImageBitmap(null);
-                break;
             case R.id.btn:
+                //拍照+选取单张图片
                 Type = 1;
                 if (PermissionUtils.checkAndReqkPermission(this, PermissionUtils.needPermissions))
                     mAlert.show();
                 break;
             case R.id.btn2:
+                //拍照+选取单张图片(系统自带裁剪)
                 Type = 2;
                 if (PermissionUtils.checkAndReqkPermission(this, PermissionUtils.needPermissions))
                     mAlert.show();
                 break;
-            case R.id.btn3:
-                Type = 3;
+            case R.id.btn4:
+                //拍照+选取单张图片(ucrop裁剪)
+                Type = 5;
                 if (PermissionUtils.checkAndReqkPermission(this, PermissionUtils.needPermissions))
                     mAlert.show();
+                break;
+            case R.id.btn_clear:
+                //清空图片
+                Bimp.selectBitmap.clear();
+                adapter.update();
+                mIv_image.setImageBitmap(null);
                 break;
         }
     }
@@ -118,72 +119,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
-        if (resultCode != RESULT_OK) return;
-        switch (requestCode) {
-            case CpUtils.CAMERA_REQUEST_CODE:
-                switch (Type) {
-                    case 1:
-                        //拍照 压缩图片
-                        Bitmap bitmap = CpUtils.zipFileFromPath(CpUtils.mTempFile.getPath());
-                        mIv_image.setImageBitmap(bitmap);
-                        uploadFile(bitmap);
-                        break;
-                    case 2:
-                        //拍照 自带裁剪图片
-                        CpUtils.cropPhoto(this, CpUtils.getUriFromFile(MainActivity.this, CpUtils.mTempFile));
-                        break;
-                    case 3:
-                        //拍照 三方裁剪图片
-                        Crop.of(CpUtils.getUriFromFile(MainActivity.this, CpUtils.mTempFile), Uri.fromFile(new File(getCacheDir(), "cropped" + System.currentTimeMillis()))).asSquare().start(this);
-                        break;
-                    case 4:
-                        //拍照 (九宫格图，图片加载时统一做了压缩)
-                        ImageItem takePhoto = new ImageItem();
-                        takePhoto.setImagePath(CpUtils.mTempFile.getPath());//Bimp.selectBitmap.get(0).getBitmap()获取使用时时做了压缩
-                        Bimp.selectBitmap.add(takePhoto);
-                        break;
-                }
-                break;
-            case CpUtils.PHOTO_REQUEST_CODE:
-                Uri uri = data.getData();
-                switch (Type) {
-                    case 1:
-                        //图册 压缩图片
-                        Bitmap bitmap = CpUtils.zipFileFromUri(this, uri);
-                        mIv_image.setImageBitmap(bitmap);
-                        uploadFile(bitmap);
-                        break;
-                    case 2:
-                        //图册 自带裁剪图片
-                        CpUtils.cropPhoto(this, uri);
-                        break;
-                    case 3:
-                        //图册 三方裁剪图片
-                        File file = new File(getCacheDir(), "cropped" + System.currentTimeMillis());
-                        Crop.of(uri, Uri.fromFile(file)).asSquare().start(this);
-                        break;
-                }
-                break;
-            case CpUtils.CROP_PHOTO_REUQEST_CODE:
-                //自带裁剪图片完成
-                try {
-                    Bitmap bitmap = CpUtils.getBitmapFromUri(this, CpUtils.mCropImageUri);
-                    mIv_image.setImageBitmap(bitmap);
-                    uploadFile(bitmap);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
-            case Crop.REQUEST_CROP:
-                //三方裁剪图片完成
-                Uri output = Crop.getOutput(data);
-                Bitmap bitmap = CpUtils.zipFileFromUri(this, output);
-                mIv_image.setImageBitmap(bitmap);
-                uploadFile(bitmap);
-                break;
-        }
-
+        File file = CpUtils.onActivityResult(requestCode, resultCode, data, this, Type, mIv_image);
     }
 
     @TargetApi(23)
@@ -201,16 +137,5 @@ public class MainActivity extends AppCompatActivity {
     public void hasPermission() {
         mAlert.show();
     }
-
-    /**
-     * 将图片上传到服务器
-     *
-     * @param bitmap
-     */
-    private void uploadFile(Bitmap bitmap) {
-        File picFile = CpUtils.getFileFromBitmap(this, bitmap);
-        //....
-    }
-
 
 }

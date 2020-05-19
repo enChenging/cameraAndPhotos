@@ -15,6 +15,7 @@ import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
 import com.release.cameralibrary.R;
+import com.release.cameralibrary.StatusBarUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +43,10 @@ public class PhotoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_photo);
 
         photo_relativeLayout = (RelativeLayout) findViewById(R.id.photo_relativeLayout);
-        photo_relativeLayout.setBackgroundColor(0x70000000);
-
+        if (Bimp.themeColor != 0 && Bimp.themeColor != R.color.white) {
+            StatusBarUtil.setColorNoTranslucent(this, getResources().getColor(Bimp.themeColor));
+            photo_relativeLayout.setBackgroundColor(getResources().getColor(Bimp.themeColor));
+        }
         Button photo_bt_exit = (Button) findViewById(R.id.photo_bt_exit);
         photo_bt_exit.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

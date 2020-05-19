@@ -17,15 +17,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="btnClick"
-        android:text="拍照(自带裁剪)+选取单张图片(自带裁剪)" />
+        android:text="拍照+选取单张图片(系统自带裁剪)" />
 
-   <Button
-       android:id="@+id/btn3"
-       android:layout_width="match_parent"
-       android:layout_height="wrap_content"
-       android:onClick="btnClick"
-       android:text="拍照(三方裁剪)+选取单张图片(三方裁剪)"
-       />
+    <Button
+        android:id="@+id/btn4"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="btnClick"
+        android:text="拍照+选取单张图片(ucrop裁剪)"
+        android:textAllCaps="false" />
 
     <Button
         android:id="@+id/btn_clear"
@@ -37,11 +37,10 @@
 
     <ImageView
         android:id="@+id/iv_image"
-        android:layout_marginTop="40dp"
-        android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="120dp"
-        />
+        android:layout_gravity="center"
+        android:layout_marginTop="40dp" />
 
     <com.release.cameralibrary.photo.GridViewNoScroll
         android:id="@+id/gridview"

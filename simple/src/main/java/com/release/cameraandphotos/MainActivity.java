@@ -69,10 +69,12 @@ public class MainActivity extends AppCompatActivity {
 
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
                 if (position == Bimp.selectBitmap.size()) {
+                    //增加
                     Type = 4;
                     if (PermissionUtils.checkAndReqkPermission(MainActivity.this, PermissionUtils.needPermissions))
                         mAlert.show();
                 } else {
+                    //展示
                     CpUtils.lookPhoto(MainActivity.this, position);
                 }
             }

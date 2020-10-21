@@ -31,11 +31,6 @@ public class PhotoActivity extends AppCompatActivity {
     private ViewPager pager;
     private MyPageAdapter adapter;
     private int count;
-
-    public List<Bitmap> bmp = new ArrayList<Bitmap>();
-    public List<String> drr = new ArrayList<String>();
-    public List<String> del = new ArrayList<String>();
-
     RelativeLayout photo_relativeLayout;
 
     public void onCreate(Bundle savedInstanceState) {

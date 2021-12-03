@@ -1,5 +1,11 @@
 package com.release.cameralibrary;
 
+import static android.app.Activity.RESULT_OK;
+import static com.yalantis.ucrop.util.FileUtils.getDataColumn;
+import static com.yalantis.ucrop.util.FileUtils.isDownloadsDocument;
+import static com.yalantis.ucrop.util.FileUtils.isExternalStorageDocument;
+import static com.yalantis.ucrop.util.FileUtils.isMediaDocument;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -42,12 +48,6 @@ import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import static android.app.Activity.RESULT_OK;
-import static com.yalantis.ucrop.util.FileUtils.getDataColumn;
-import static com.yalantis.ucrop.util.FileUtils.isDownloadsDocument;
-import static com.yalantis.ucrop.util.FileUtils.isExternalStorageDocument;
-import static com.yalantis.ucrop.util.FileUtils.isMediaDocument;
-
 /**
  * @author Mr.release
  * @create 2020-01-03
@@ -55,12 +55,15 @@ import static com.yalantis.ucrop.util.FileUtils.isMediaDocument;
  */
 public class CpUtils {
 
-    public static Uri mCropImageUri;
     public static File mTempFile;
+    public static Uri mCameraUri;
+    public static Uri mPhotoUri;
+    public static boolean mIsCamera;
     public static final int CAMERA_REQUEST_CODE = 101, PHOTO_REQUEST_CODE = 102, CROP_PHOTO_REUQEST_CODE = 103;
     private static String imageName;
     private static String mImagePath;
-
+    // 是否是Android 10以上手机
+    private static boolean isAndroidQ = Build.VERSION.SDK_INT >= 29;
 
     /**
      * 初始化配置
@@ -95,15 +98,19 @@ public class CpUtils {
      * 拍照
      */
     public static void camera(Activity activity) {
-        String imagePath = getImagePath(activity);
         imageName = System.currentTimeMillis() + ".png";
-        mTempFile = getFile(imagePath, imageName);
-        Log.i("cyc", "camera:" + mTempFile.toString());
+        if (isAndroidQ) {
+            mCameraUri = createImageUri(activity);
+        } else {
+            mTempFile = getFile(getImagePath(activity), imageName);
+            mCameraUri = getUriForFile(mTempFile);
+        }
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
             StrictMode.setVmPolicy(builder.build());
             Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, getUriForFile(mTempFile));
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, mCameraUri);
+            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             activity.startActivityForResult(intent, CAMERA_REQUEST_CODE);
         } else {
             Toast.makeText(activity, "请确认已插入SD卡", Toast.LENGTH_SHORT).show();
@@ -160,10 +167,10 @@ public class CpUtils {
      *
      * @param uri
      */
-    public static void cropPhoto(Activity activity, Uri uri) {
-        String imagePath = getImagePath(activity);
-        mCropImageUri = Uri.parse("file://" + "/" + imagePath + imageName);
-        Log.i("cyc", "cropPhoto:" + mCropImageUri.toString());
+    public static void cropPhoto(Activity activity, File file, Uri uri) {
+//        String imagePath = getImagePath(activity);
+//        mCropImageUri = Uri.parse("file://" + "/" + imagePath + imageName);
+//        Log.i("cyc", "cropPhoto:" + mCropImageUri.toString());
         Intent intent = new Intent("com.android.camera.action.CROP");
         intent.setDataAndType(uri, "image/*");
         intent.putExtra("crop", "true");
@@ -177,7 +184,8 @@ public class CpUtils {
         intent.putExtra("outputX", 250);
         intent.putExtra("outputY", 250);
         intent.putExtra("outputFormat", Bitmap.CompressFormat.PNG.toString());
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, mCropImageUri);
+        intent.putExtra("noFaceDetection", true);// 取消人脸识别
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(file));
         activity.startActivityForResult(intent, CROP_PHOTO_REUQEST_CODE);
     }
 
@@ -206,13 +214,15 @@ public class CpUtils {
 
     /**
      * 将图片保存到sd卡
+     * /storage/emulated/0/com.release.testcameraandphotos/cameraImage/1638517212921.png
      *
-     * @param context
      * @param bitmap
      * @return
      */
-    public static File getFileFromBitmap(Context context, Bitmap bitmap) {
-        String path = Environment.getExternalStorageDirectory() + "/" + context.getPackageName() + "/cameraImage/";
+    public static File getFileFromBitmap(Bitmap bitmap, String imagePath) {
+        String path = imagePath.substring(0, imagePath.lastIndexOf(File.separator) + 1);
+        String imageName = imagePath.substring(imagePath.lastIndexOf(File.separator) + 1);
+        Log.i("cyc", "path: " + path + "   imageName:" + imageName);
         File file = getFile(path, imageName);
         try {
             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));
@@ -388,8 +398,7 @@ public class CpUtils {
                 new String[]{filePath}, null);
 
         if (cursor != null && cursor.moveToFirst()) {
-            int id = cursor.getInt(cursor
-                    .getColumnIndex(MediaStore.MediaColumns._ID));
+            int id = cursor.getInt(cursor.getColumnIndex(MediaStore.MediaColumns._ID));
             Uri baseUri = Uri.parse("content://media/external/images/media");
             return Uri.withAppendedPath(baseUri, "" + id);
         } else {
@@ -404,9 +413,49 @@ public class CpUtils {
         }
     }
 
+    /**
+     * createImageUri
+     *
+     * @param context
+     * @return
+     */
+    private static Uri createImageUri(Context context) {
+        //imagePath:/external/images/media/146139
+        String status = Environment.getExternalStorageState();
+        //判断是否有SD卡,优先使用SD卡存储,当没有SD卡时使用手机存储
+        if (status.equals(Environment.MEDIA_MOUNTED)) {
+            return context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
+        } else {
+            return context.getContentResolver().insert(MediaStore.Images.Media.INTERNAL_CONTENT_URI, new ContentValues());
+        }
+    }
+
+    /**
+     * 获取根据Uri获取文件存储地址
+     *
+     * @param context
+     * @param contentUri
+     * @return
+     */
+    public static String getRealPathFromUri(Context context, Uri contentUri) {
+        Cursor cursor = null;
+        try {
+            String[] proj = {MediaStore.Images.Media.DATA};
+            cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
+            int column_index = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            return cursor.getString(column_index);
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
+
     /***
      * 获取Uri
      * 用于调取照相机
+     *
      * @param file
      * @return
      */
@@ -565,56 +614,79 @@ public class CpUtils {
         if (resultCode != RESULT_OK) return null;
         switch (requestCode) {
             case CAMERA_REQUEST_CODE:
+                mIsCamera = true;
+                Bitmap realBitmap;
+                String realPath;
+                if (isAndroidQ) {
+                    realBitmap = zipFileFromUri(activity, mCameraUri);
+                    realPath = getRealPathFromUri(activity, mCameraUri);
+                } else {
+                    realBitmap = zipFileFromPath(mTempFile.getPath());
+                    realPath = mTempFile.getPath();
+                }
+                Log.i("cyc", "cameraUri: " + mCameraUri);
+                Log.i("cyc", "realPath: " + realPath);
+                File realFile = getFileFromBitmap(realBitmap, realPath);
                 switch (type) {
                     case 1:
                         //拍照 压缩图片
-                        Bitmap bitmap = zipFileFromPath(mTempFile.getPath());
-                        imageView.setImageBitmap(bitmap);
-                        mFile = getFileFromBitmap(activity, bitmap);
+                        imageView.setImageBitmap(realBitmap);
+                        mFile = realFile;
                         break;
                     case 2:
                         //拍照 自带裁剪图片
-                        cropPhoto(activity, getUriFromFile(activity, mTempFile));
+                        if (isAndroidQ) {
+                            cropPhoto(activity, realFile, mCameraUri);
+                        } else {
+                            cropPhoto(activity, realFile, getUriFromFile(activity, mTempFile));
+                        }
                         break;
                     case 4:
                         //拍照 (九宫格图，图片加载时统一做了压缩)
                         ImageItem takePhoto = new ImageItem();
-                        takePhoto.setImagePath(mTempFile.getPath());//Bimp.selectBitmap.get(0).getBitmap()获取使用时时做了压缩
+                        takePhoto.setImagePath(realPath);//Bimp.selectBitmap.get(0).getBitmap()获取使用时时做了压缩
                         Bimp.selectBitmap.add(takePhoto);
                         break;
                     case 5:
-                        //拍照 三方裁剪图片2
-                        String path = getPath(activity, getUriFromFile(activity, mTempFile));
-                        ImageCropManage.startCropActivity(activity, new File(path).getAbsolutePath());
+                        //拍照 三方ucrop裁剪图片2
+                        ImageCropManage.startCropActivity(activity, new File(realPath).getPath());
                         break;
                 }
                 break;
             case PHOTO_REQUEST_CODE:
-                Uri uri = data.getData();
+                mIsCamera = false;
+                mPhotoUri = data.getData();
+                Log.i("cyc", "photoUri: " + mPhotoUri);
                 switch (type) {
                     case 1:
                         //图册 压缩图片
-                        Bitmap bitmap = zipFileFromUri(activity, uri);
+                        Bitmap bitmap = zipFileFromUri(activity, mPhotoUri);
                         imageView.setImageBitmap(bitmap);
-                        mFile = getFileFromBitmap(activity, bitmap);
+                        mFile = getFileFromBitmap(bitmap, getRealPathFromUri(activity, mPhotoUri));
                         break;
                     case 2:
                         //图册 自带裁剪图片
-                        cropPhoto(activity, uri);
+                        String path = getPath(activity, mPhotoUri);
+                        cropPhoto(activity, new File(path), mPhotoUri);
                         break;
                     case 5:
                         //图册 三方裁剪图片
-                        String path = getPath(activity, data.getData());
-                        ImageCropManage.startCropActivity(activity, new File(path).getAbsolutePath());
+                        path = getPath(activity, mPhotoUri);
+                        ImageCropManage.startCropActivity(activity, new File(path).getPath());
                         break;
                 }
                 break;
             case CROP_PHOTO_REUQEST_CODE:
                 //自带裁剪图片完成
+                Uri uri;
+                if (mIsCamera)
+                    uri = mCameraUri;
+                else
+                    uri = mPhotoUri;
                 try {
-                    Bitmap bitmap = getBitmapFromUri(activity, mCropImageUri);
+                    Bitmap bitmap = getBitmapFromUri(activity, uri);
                     imageView.setImageBitmap(bitmap);
-                    mFile = getFileFromBitmap(activity, bitmap);
+                    mFile = getFileFromBitmap(bitmap, getRealPathFromUri(activity, uri));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -624,7 +696,8 @@ public class CpUtils {
                 final Uri resultUri = UCrop.getOutput(data);
                 Bitmap bitmap = zipFileFromUri(activity, resultUri);
                 imageView.setImageBitmap(bitmap);
-                mFile = getFileFromBitmap(activity, bitmap);
+                Log.i("cyc", "resultUri: " + resultUri.getPath());
+                mFile = getFileFromBitmap(bitmap, resultUri.getPath());
                 break;
         }
 

@@ -25,7 +25,7 @@ allprojects {
  在build.gradle文件中的dependencies下添加引用：
 	
 ```java
-implementation 'com.github.enChenging:cameraAndPhotos:1.2.6'
+implementation 'com.github.enChenging:cameraAndPhotos:1.3.0'
 ```
 详细使用见工程里的[simple](https://github.com/enChenging/cameraAndPhotos/tree/master/simple)
 
